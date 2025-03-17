@@ -26,7 +26,7 @@ steps:
     inputs:
       command: "build"
       projects: ${{ parameters.project }}
-      arguments: "--configuration ${{ parameters.buildConfiguration }} /p:Platform=${{ parameters.buildPlatform }}"
+      arguments: '--configuration ${{ parameters.buildConfiguration }} /p:Platform="${{ parameters.buildPlatform }}"''
 
   - task: DotNetCoreCLI@2
     displayName: "Publish User Api"
@@ -34,5 +34,5 @@ steps:
       command: "publish"
       publishWebProjects: false
       projects: ${{ parameters.project }}
-      arguments: '--configuration $(buildConfiguration) /p:Platform="$(buildPlatform)"  --output $(Build.ArtifactStagingDirectory)'
+      arguments: '--configuration $(buildConfiguration) /p:Platform="${{ parameters.buildPlatform }}"  --output $(Build.ArtifactStagingDirectory)'
       zipAfterPublish: true
