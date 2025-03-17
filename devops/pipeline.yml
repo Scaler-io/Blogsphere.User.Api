@@ -49,5 +49,5 @@ stages:
               steps:
                 - template: ./deploy/github-release.yml
                   parameters:
-                    - githubConnection: $(githubConnection)
-                    - repositoryName: $(repositoryName)
+                    githubConnection: $(githubConnection)
+                    repositoryName: $(repositoryName)
