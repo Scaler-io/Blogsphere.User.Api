@@ -1,0 +1,6 @@
+services:
+  blogsphere.user.api:
+    image: ${DOCKER_REGISTRY-}blogsphereuserapi
+    build:
+      context: .
+      dockerfile: Blogsphere.User.Api/Dockerfile
