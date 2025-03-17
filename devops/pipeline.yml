@@ -40,7 +40,7 @@ stages:
     displayName: "Github release job"
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
-      - job: GithubRelease
+      - deployment: GithubRelease
         displayName: "Github release"
         environment: blogsphere-user-api-github-release-env
         strategy:
