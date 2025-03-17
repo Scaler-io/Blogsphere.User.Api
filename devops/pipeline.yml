@@ -38,7 +38,7 @@ stages:
 
   - stage: GithubRelease
     displayName: "Github release job"
-    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: GithubRelease
         displayName: "Github release"
