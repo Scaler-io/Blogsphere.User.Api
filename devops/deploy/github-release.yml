@@ -3,7 +3,6 @@ parameters:
     default: ""
   - name: repositoryName
     default: ""
-  -
 
 steps:
   - checkout: self
