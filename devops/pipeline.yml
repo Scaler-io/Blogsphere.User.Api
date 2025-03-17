@@ -63,7 +63,7 @@ stages:
     jobs:
       - deployment: DockerBuildAndPush
         displayName: "Docker build and push job"
-        environment:
+        environment: blogsphere-user-api-docker-env
         strategy:
           runOnce:
             deploy:
