@@ -36,5 +36,5 @@ stages:
             parameters:
               project: $(project)
               buildConfiguration: $(buildConfiguration)
-              buuildPlatform: $(buildPlatform)
+              buildPlatform: $(buildPlatform)
               dotnetVersion: $(dotnetVersion)
