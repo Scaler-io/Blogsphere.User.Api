@@ -42,8 +42,8 @@ stages:
     displayName: "Github release"
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
-      - deployment: GithubRelease
-        displayName: "Github release job"
+      - deployment: CreateRelease
+        displayName: "Crete Github release job"
         environment: blogsphere-user-api-github-release-env
         strategy:
           runOnce:
@@ -59,7 +59,7 @@ stages:
     dependsOn: GithubRelease
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     variables:
-      RELEASE_TAG: $[ stageDependencies.GithubRelease.GithubRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
+      RELEASE_TAG: $[ stageDependencies.GithubRelease.CreateRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
     jobs:
       - deployment: DockerBuildAndPush
         displayName: "Docker build and push job"
