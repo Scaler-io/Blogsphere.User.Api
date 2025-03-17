@@ -61,15 +61,11 @@ stages:
     variables:
       RELEASE_TAG: $[ stageDependencies.GithubRelease.CreateRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
     jobs:
-      - deployment: DockerBuildAndPush
+      - job: DockerBuildAndPush
         displayName: "Docker build and push job"
-        environment: blogsphere-user-api-docker-env
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: ./deploy/docker.yml
-                  parameters:
-                    imageName: $(imageName)
-                    tag: $(RELEASE_TAG)
-                    containerRegistry: $(containerRegistry)
+        steps:
+          - template: ./deploy/docker.yml
+            parameters:
+              imageName: $(imageName)
+              tag: $(RELEASE_TAG)
+              containerRegistry: $(containerRegistry)
