@@ -25,22 +25,22 @@ variables:
   containerRegistry: "docker-hub-sharthak1995-connection"
 
 stages:
-  # - stage: Build
-  #   displayName: "Build User Api"
-  #   jobs:
-  #     - job: build
-  #       displayName: "Build job"
-  #       steps:
-  #         - template: ./build/build.yml
-  #           parameters:
-  #             project: $(project)
-  #             buildConfiguration: $(buildConfiguration)
-  #             buildPlatform: $(buildPlatform)
-  #             dotnetVersion: $(dotnetVersion)
+  - stage: Build
+    displayName: "Build User Api"
+    jobs:
+      - job: build
+        displayName: "Build job"
+        steps:
+          - template: ./build/build.yml
+            parameters:
+              project: $(project)
+              buildConfiguration: $(buildConfiguration)
+              buildPlatform: $(buildPlatform)
+              dotnetVersion: $(dotnetVersion)
 
   - stage: GithubRelease
     displayName: "Github release"
-    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - job: GithubRelease
         displayName: "Github release job"
@@ -53,7 +53,7 @@ stages:
   - stage: DockerBuildAndPush
     displayName: "Docker build and push"
     dependsOn: GithubRelease
-    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     variables:
       RELEASE_TAG: $[ stageDependencies.GithubRelease.GithubRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
     jobs:
