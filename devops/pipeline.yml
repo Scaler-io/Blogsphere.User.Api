@@ -69,7 +69,7 @@ stages:
             deploy:
               steps:
                 - template: ./deploy/docker.yml
-                  paramters:
+                  parameters:
                     imageName: $(imageName)
                     tag: $(RELEASE_TAG)
                     containerRegistry: $(containerRegistry)
