@@ -21,27 +21,29 @@ variables:
   dotnetVersion: "8.x"
   githubConnection: "github.com_sharthak1095"
   repositoryName: "Scaler-io/Blogsphere.User.Api"
+  imageName: "sharthak1995/blogsphere.user.svc"
+  containerRegistry: "docker-hub-sharthak1995-connection"
 
 stages:
-  - stage: Build
-    displayName: "Build User Api"
-    jobs:
-      - job: build
-        displayName: "Build job"
-        steps:
-          - template: ./build/build.yml
-            parameters:
-              project: $(project)
-              buildConfiguration: $(buildConfiguration)
-              buildPlatform: $(buildPlatform)
-              dotnetVersion: $(dotnetVersion)
+  # - stage: Build
+  #   displayName: "Build User Api"
+  #   jobs:
+  #     - job: build
+  #       displayName: "Build job"
+  #       steps:
+  #         - template: ./build/build.yml
+  #           parameters:
+  #             project: $(project)
+  #             buildConfiguration: $(buildConfiguration)
+  #             buildPlatform: $(buildPlatform)
+  #             dotnetVersion: $(dotnetVersion)
 
   - stage: GithubRelease
-    displayName: "Github release job"
-    condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    displayName: "Github release"
+    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: GithubRelease
-        displayName: "Github release"
+        displayName: "Github release job"
         environment: blogsphere-user-api-github-release-env
         strategy:
           runOnce:
@@ -51,3 +53,23 @@ stages:
                   parameters:
                     githubConnection: $(githubConnection)
                     repositoryName: $(repositoryName)
+
+  - stage: DockerBuildAndPush
+    displayName: "Docker build and push"
+    dependsOn: GithubRelease
+    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables:
+      RELEASE_TAG: $[ stageDependencies.GithubRelease.CreateRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
+    jobs:
+      - deployment: DockerBuildAndPush
+        displayName: "Docker build and push job"
+        environment:
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./deploy/docker.yml
+                  paramters:
+                    imageName: $(imageName)
+                    tag: $(RELEASE_TAG)
+                    containerRegistry: $(containerRegistry)

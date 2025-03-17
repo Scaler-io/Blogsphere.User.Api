@@ -1,0 +1,29 @@
+parameters:
+  - name: imageName
+    default: "sharthak1995/blogsphere.identity.svc"
+  - name: tag
+    default: ""
+  - name: containerRegistry
+
+steps:
+  - task: Docker@2
+    displayName: "Login to Docker Hub"
+    inputs:
+      command: "login"
+      containerRegistry: ${{ parameters.containerRegistry }}
+
+  - task: Docker@2
+    displayName: "Build Docker Image"
+    inputs:
+      command: "build"
+      Dockerfile: "$(Build.SourcesDirectory)/src/Blogsphere.User.Api/Dockerfile"
+      buildContext: "$(Build.SourcesDirectory)/src/."
+      repository: ${{ parameters.imageName }}
+      tags: "${{ parameters.tag }}"
+
+  - task: Docker@2
+    displayName: "Push Docker Image"
+    inputs:
+      command: "push"
+      repository: ${{ parameters.imageName }}
+      tags: "${{ parameters.tag }}"
