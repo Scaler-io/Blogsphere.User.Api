@@ -42,34 +42,26 @@ stages:
     displayName: "Github release"
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
-      - deployment: CreateRelease
-        displayName: "Crete Github release job"
-        environment: blogsphere-user-api-github-release-env
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: ./deploy/github-release.yml
-                  parameters:
-                    githubConnection: $(githubConnection)
-                    repositoryName: $(repositoryName)
+      - job: GithubRelease
+        displayName: "Github release job"
+        steps:
+          - template: ./deploy/github-release.yml
+            parameters:
+              githubConnection: $(githubConnection)
+              repositoryName: $(repositoryName)
 
   - stage: DockerBuildAndPush
     displayName: "Docker build and push"
     dependsOn: GithubRelease
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     variables:
-      RELEASE_TAG: $[ stageDependencies.GithubRelease.CreateRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
+      RELEASE_TAG: $[ stageDependencies.GithubRelease.GithubRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
     jobs:
-      - deployment: DockerBuildAndPush
+      - job: DockerBuildAndPush
         displayName: "Docker build and push job"
-        environment: blogsphere-user-api-docker-env
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: ./deploy/docker.yml
-                  parameters:
-                    imageName: $(imageName)
-                    tag: $(RELEASE_TAG)
-                    containerRegistry: $(containerRegistry)
+        steps:
+          - template: ./deploy/docker.yml
+            parameters:
+              imageName: $(imageName)
+              tag: $(RELEASE_TAG)
+              containerRegistry: $(containerRegistry)
