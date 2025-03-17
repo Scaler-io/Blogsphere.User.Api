@@ -59,13 +59,17 @@ stages:
     dependsOn: GithubRelease
     # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     variables:
-      RELEASE_TAG: $[ stageDependencies.GithubRelease.CreateRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
+      RELEASE_TAG: $[ stageDependencies.GithubRelease.GithubRelease.outputs['setReleaseTag.RELEASE_TAG'] ]
     jobs:
-      - job: DockerBuildAndPush
+      - deployment: DockerBuildAndPush
         displayName: "Docker build and push job"
-        steps:
-          - template: ./deploy/docker.yml
-            parameters:
-              imageName: $(imageName)
-              tag: $(RELEASE_TAG)
-              containerRegistry: $(containerRegistry)
+        environment: blogsphere-user-api-docker-env
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./deploy/docker.yml
+                  parameters:
+                    imageName: $(imageName)
+                    tag: $(RELEASE_TAG)
+                    containerRegistry: $(containerRegistry)
