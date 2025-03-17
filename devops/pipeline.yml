@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   batch: true
   branches:
@@ -24,6 +19,8 @@ variables:
   buildPlatform: "Any CPU"
   buildConfiguration: "Release"
   dotnetVersion: "8.x"
+  githubConnection: "github.com_sharthak1095"
+  repositoryName: "Scaler-io/Blogsphere.User.Api"
 
 stages:
   - stage: Build
@@ -38,3 +35,19 @@ stages:
               buildConfiguration: $(buildConfiguration)
               buildPlatform: $(buildPlatform)
               dotnetVersion: $(dotnetVersion)
+
+  - stage: GithubRelease
+    displayName: "Github release job"
+    # condition: and(succeeded(), notIn(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: GithubRelease
+        displayName: "Github release"
+        environment: blogsphere-user-api-github-release-env
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./deploy/github-release.yml
+                  parameters:
+                    - githubConnection: $(githubConnection)
+                    - repositoryName: $(repositoryName)
