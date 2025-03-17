@@ -26,7 +26,7 @@ steps:
     inputs:
       command: "build"
       projects: ${{ parameters.project }}
-      arguments: '--configuration ${{ parameters.buildConfiguration }} /p:Platform="${{ parameters.buildPlatform }}"''
+      arguments: '--configuration ${{ parameters.buildConfiguration }} /p:Platform="${{ parameters.buildPlatform }}"'
 
   - task: DotNetCoreCLI@2
     displayName: "Publish User Api"
