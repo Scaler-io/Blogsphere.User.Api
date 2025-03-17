@@ -1,0 +1,40 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - feature/**
+      - hotfix/**
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  project: "**/Blogsphere.User.Api.csproj"
+  buildPlatform: "Any CPU"
+  buildConfiguration: "Release"
+  dotnetVersion: "8.x"
+
+stages:
+  - stage: Build
+    displayName: "Build User Api"
+    jobs:
+      - job: build
+        displayName: "Build job"
+        steps:
+          - template: ./build/build.yml
+            parameters:
+              project: $(project)
+              buildConfiguration: $(buildConfiguration)
+              buuildPlatform: $(buildPlatform)
+              dotnetVersion: $(dotnetVersion)

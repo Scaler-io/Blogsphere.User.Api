@@ -1,0 +1,38 @@
+parameters:
+  - name: project
+    default: ""
+  - name: buildConfiguration
+    default: ""
+  - name: buildPlatform
+    default: ""
+  - name: dotnetVersion
+    default: ""
+
+steps:
+  - task: UseDotNet@2
+    displayName: "Install Dotnet SDK"
+    inputs:
+      packageType: "sdk"
+      version: ${{ parameters.dotnetVersion }}
+
+  - task: DotNetCoreCLI@2
+    displayName: "Restore Nuget Dependencies"
+    inputs:
+      command: "restore"
+      projects: ${{ parameters.project }}
+
+  - task: DotNetCoreCLI@2
+    displayName: "Build User Api Project"
+    inputs:
+      command: "build"
+      projects: ${{ parameters.project }}
+      arguments: "--configuration ${{ parameters.buildConfiguration }} /p:Platform=${{ parameters.buildPlatform }}"
+
+  - task: DotNetCoreCLI@2
+    displayName: "Publish User Api"
+    inputs:
+      command: "publish"
+      publishWebProjects: false
+      projects: ${{ parameters.project }}
+      arguments: '--configuration $(buildConfiguration) /p:Platform="$(buildPlatform)"  --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: true
