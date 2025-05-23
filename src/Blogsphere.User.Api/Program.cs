@@ -1,44 +1,36 @@
+using Blogsphere.Swagger;
+using Blogsphere.User.Api;
+using Blogsphere.User.Api.DI;
+using Blogsphere.User.Infrastructure.DI;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+var apiName = SwaggerConfiguration.ExtractApiNameFromEnvironmentVariable();
+var apiDescription = builder.Configuration["ApiDescription"];
+var apiHost = builder.Configuration["ApiOriginHost"];
+var swaggerConfiguration = new SwaggerConfiguration(apiName, apiDescription, apiHost, builder.Environment.IsDevelopment());
+
+
+builder.Services
+    .ConfigurationApplicationOptions(builder.Configuration)
+    .AddApplicationServices(builder.Configuration, swaggerConfiguration)
+    .ConfigureInfraServices(builder.Configuration);
+
+var logger = Logging.GetLogger(builder.Configuration, builder.Environment);
+builder.Host.UseSerilog(logger);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.AddApplicationPipeline(swaggerConfiguration);
+
+
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    await app.RunAsync();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+finally
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    Log.CloseAndFlush();
 }

@@ -13,4 +13,8 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Blogsphere.User.Api\Blogsphere.User.Api.csproj" />
+    <ProjectReference Include="Blogsphere.Swagger\Blogsphere.Swagger.csproj" />
+  </ItemGroup>
 </Project>
