@@ -18,4 +18,10 @@
     <ProjectReference Include="..\Blogsphere.User.Domain\Blogsphere.User.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Serilog.ILogger">
+      <Alias>ILogger</Alias>
+    </Using>
+  </ItemGroup>
+
 </Project>

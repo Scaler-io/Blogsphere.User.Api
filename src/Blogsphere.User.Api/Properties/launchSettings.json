@@ -7,13 +7,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5001"
+      "applicationUrl": "http://localhost:5001",
+      "launchBrowser": true
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
       "environmentVariables": {
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "8080",
+        "SWAGGER_ENVIRONMENT_NAME": "Development",
+        "SWAGGER_SCHEME": "http"
       },
       "publishAllPorts": true,
       "useSSL": false
