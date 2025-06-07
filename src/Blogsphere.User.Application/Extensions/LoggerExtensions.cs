@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Blogsphere.User.Application.Extensions;
+
 public static class LoggerExtensions
 {
     public static ILogger Here(this ILogger logger,
@@ -21,11 +22,19 @@ public static class LoggerExtensions
     public static void MethodExited(this ILogger logger, object? withResult = null)
     {
         logger.Debug(LoggerConstants.MethodExited);
-        if (withResult is not null) logger.Debug("{MethodExited} with result {@result}", LoggerConstants.MethodExited, withResult);
+        if (withResult is not null)
+        {
+            logger.Debug("{MethodExited} with result {@result}", LoggerConstants.MethodExited, withResult);
+        }
     }
 
     public static ILogger WithCorrelationId(this ILogger logger, string correlationId)
     {
         return logger.ForContext(LoggerConstants.CorrelationId, correlationId);
+    }
+
+    public static ILogger WithUserId(this ILogger logger, string userId)
+    {
+        return logger.ForContext(LoggerConstants.UserId, userId);
     }
 }

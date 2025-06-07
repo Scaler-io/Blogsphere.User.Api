@@ -13,7 +13,7 @@ public static class WebApplicationExtensions
         app.UseSwaggerUI(options =>
         {
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-            swaggerConfiguration.SetupSwaggerUiOptions(options, provider);
+            SwaggerConfiguration.SetupSwaggerUiOptions(options, provider);
         });
 
         app.UseHttpsRedirection();

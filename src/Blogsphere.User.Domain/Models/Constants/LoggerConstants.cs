@@ -7,6 +7,5 @@ public class LoggerConstants
     public const string CorrelationId = "CorrelationId";
     public const string MemberName = "MemberName";
     public const string CallerType = "CallerType";
-    public const string SupplierId = "SupplierId";
-    public const string CustomerId = "CustomerId";
+    public const string UserId = "UserId";
 }

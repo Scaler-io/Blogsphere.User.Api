@@ -44,6 +44,7 @@ public static class InfrastructureServiceCollectionExtensions
         .AddDefaultTokenProviders()
         .AddTokenProvider<ConfirmationEmailTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider");
 
+        services.AddScoped<Application.Contracts.Data.IDbTransaction, DbTransaction>();
 
         // masstransit service addition - using rabbitmq
 
