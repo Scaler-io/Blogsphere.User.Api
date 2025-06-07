@@ -67,14 +67,14 @@ public sealed class SwaggerConfiguration
         options.OperationFilter<SwaggerHeaderFilter>();
         options.SchemaFilter<EnumSchemaFilter>();
         options.CustomSchemaIds(x => x.FullName);
+        options.EnableAnnotations();
         if (_isDevelopment)
         {
             options.OperationFilter<SwaggerApiVersionFilter>();
         }
-
     }
 
-    public void SetupSwaggerUiOptions(SwaggerUIOptions options, IApiVersionDescriptionProvider serviceProvider)
+    public static void SetupSwaggerUiOptions(SwaggerUIOptions options, IApiVersionDescriptionProvider serviceProvider)
     {
         foreach (var description in serviceProvider.ApiVersionDescriptions)
         {
@@ -83,5 +83,4 @@ public sealed class SwaggerConfiguration
                     $"User API - {description.GroupName.ToUpperInvariant()}");
         }
     }
-
 }

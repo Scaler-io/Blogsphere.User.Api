@@ -1,8 +1,9 @@
-﻿using Blogsphere.User.Application.Behaviors;
+using Blogsphere.User.Application.Behaviors;
 using Blogsphere.User.Application.Contracts.Security;
 using Blogsphere.User.Application.Security;
 using Blogsphere.User.Domain.Entities;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,9 +15,9 @@ public static class BusinessLogicServiceCollectionExtensions
     public static IServiceCollection ConfigureBusinessLogicServices(this IServiceCollection services)
     {
 
+        services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
         services.AddMediatR(Assembly.GetExecutingAssembly());
-
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DbTransactionBehavior<,>));
+        services.AddValidators();
 
         services.AddSingleton<IPermissionMapper, PermissionMapper>(sp =>
         {
@@ -28,8 +29,10 @@ public static class BusinessLogicServiceCollectionExtensions
         // auto mapper
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        // Fluent validation
-        services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
+        .AddTransient(typeof(IPipelineBehavior<,>), typeof(DbTransactionBehavior<,>));
 
         return services;
     }
