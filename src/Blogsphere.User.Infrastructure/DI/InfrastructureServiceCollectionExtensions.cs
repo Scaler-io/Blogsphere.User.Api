@@ -36,7 +36,8 @@ public static class InfrastructureServiceCollectionExtensions
         .SetApplicationName("blogsphere");
 
         services.AddHealthChecks()
-            .AddCheck<DbHealthCheck>("sqlserver-health");
+            .AddCheck<DbHealthCheck>("sqlserver-health")
+            .AddCheck<RedisHealthCheck>("redis-health");
 
         // for in-memory cache
         services.AddMemoryCache();
@@ -45,12 +46,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddStackExchangeRedisCache(options =>
         {
             options.InstanceName = configuration["Redis:InstanceName"];
-            options.ConnectionMultiplexerFactory = async () =>
-            {
-                var config = configuration.GetConnectionString("Redis");
-                var multiplexer = await ConnectionMultiplexer.ConnectAsync(config);
-                return multiplexer;
-            };
+            options.Configuration = configuration.GetConnectionString("Redis");
         });
 
         // services.AddDataProtection()
