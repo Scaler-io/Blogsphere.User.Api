@@ -108,9 +108,11 @@ public static class ServiceCollectionExtensions
             .ConfigureResource(resource => resource.AddService("blogsphere.user.api"))
             .WithTracing(tracing =>
             {
-                tracing.AddAspNetCoreInstrumentation()
+                tracing.AddSource("Blogsphere.User.API")
+                .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
+                .AddRedisInstrumentation()
                 .AddZipkinExporter(options =>
                 {
                     options.Endpoint = new Uri(configuration["Zipkin:Url"]);
