@@ -1,6 +1,7 @@
 using Blogsphere.Swagger;
 using Blogsphere.User.Api;
 using Blogsphere.User.Api.DI;
+using Blogsphere.User.Application.DI;
 using Blogsphere.User.Infrastructure.DI;
 using Serilog;
 
@@ -14,8 +15,9 @@ var swaggerConfiguration = new SwaggerConfiguration(apiName, apiDescription, api
 
 
 builder.Services
-    .ConfigurationApplicationOptions(builder.Configuration)
     .AddApplicationServices(builder.Configuration, swaggerConfiguration)
+    .ConfigurationApplicationOptions(builder.Configuration)
+    .ConfigureBusinessLogicServices()
     .ConfigureInfraServices(builder.Configuration);
 
 var logger = Logging.GetLogger(builder.Configuration, builder.Environment);

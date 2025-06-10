@@ -1,5 +1,10 @@
-﻿using Blogsphere.User.Domain.Entities;
+﻿using Blogsphere.User.Application.Contracts.Data.Repositories;
+using Blogsphere.User.Application.Contracts.Factory;
+using Blogsphere.User.Domain.Entities;
+using Blogsphere.User.Infrastructure.Cache;
 using Blogsphere.User.Infrastructure.Database;
+using Blogsphere.User.Infrastructure.Database.Repositories;
+using Blogsphere.User.Infrastructure.Factory;
 using Blogsphere.User.Infrastructure.HealthChecks;
 using Blogsphere.User.Infrastructure.Security;
 using Microsoft.AspNetCore.DataProtection;
@@ -30,7 +35,18 @@ public static class InfrastructureServiceCollectionExtensions
         .SetApplicationName("blogsphere");
 
         services.AddHealthChecks()
-            .AddCheck<DbHealthCheck>("sqlserver-health");
+            .AddCheck<DbHealthCheck>("sqlserver-health")
+            .AddCheck<RedisHealthCheck>("redis-health");
+
+        // for in-memory cache
+        services.AddMemoryCache();
+
+        // for redis
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.InstanceName = configuration["Redis:InstanceName"];
+            options.Configuration = configuration.GetConnectionString("Redis");
+        });
 
         // services.AddDataProtection()
         //     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(appRootPath, "keys")))
@@ -44,6 +60,13 @@ public static class InfrastructureServiceCollectionExtensions
         .AddDefaultTokenProviders()
         .AddTokenProvider<ConfirmationEmailTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider");
 
+        services.AddTransient<Application.Contracts.Data.IDbTransaction, DbTransaction>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Caching
+        services.AddScoped<ICacheServiceFactory, CacheServiceFactory>();
+        services.AddScoped<InMemoryCacheService>();
+        services.AddScoped<DistributedCacheService>();
 
         // masstransit service addition - using rabbitmq
 

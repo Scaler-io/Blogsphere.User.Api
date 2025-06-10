@@ -2,11 +2,11 @@
 using Asp.Versioning.ApiExplorer;
 using Blogsphere.Swagger;
 using Blogsphere.Swagger.Examples.HealthCheck;
+using Blogsphere.Swagger.Examples.UserRegistration;
 using Blogsphere.User.Api.Middlewares;
 using Blogsphere.User.Api.Services;
 using Blogsphere.User.Domain.Configurations;
 using Blogsphere.User.Domain.Models.Core;
-using Blogsphere.User.Domain.Models.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -70,11 +70,9 @@ public static class ServiceCollectionExtensions
             swaggerConfiguration.SetupSwaggerGenService(options, provider);
         });
 
-        services.AddTransient< CorrelationHeaderEnricher>()
-            .AddTransient< GlobalExceptionMiddleware>()
-            .AddTransient< RequestLoggerMiddleware>();
-
-
+        services.AddTransient<CorrelationHeaderEnricher>()
+            .AddTransient<GlobalExceptionMiddleware>()
+            .AddTransient<RequestLoggerMiddleware>();
 
         // configure identity
         var identityGroupAccess = configuration.GetSection(IdentityGroupAccessOption.OptionName)
@@ -103,7 +101,6 @@ public static class ServiceCollectionExtensions
                 .Build();
         });
 
-
         services.AddHttpContextAccessor();
         services.AddScoped<IIdentityService, IdentityService>();
 
@@ -111,15 +108,16 @@ public static class ServiceCollectionExtensions
             .ConfigureResource(resource => resource.AddService("blogsphere.user.api"))
             .WithTracing(tracing =>
             {
-                tracing.AddAspNetCoreInstrumentation()
+                tracing.AddSource("Blogsphere.User.API")
+                .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
+                .AddRedisInstrumentation()
                 .AddZipkinExporter(options =>
                 {
                     options.Endpoint = new Uri(configuration["Zipkin:Url"]);
                 });
             });
-
 
         services.AddCors(options =>
         {
@@ -128,7 +126,6 @@ public static class ServiceCollectionExtensions
                 policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
             });
         });
-
 
         return services;
     }
@@ -146,16 +143,16 @@ public static class ServiceCollectionExtensions
                 Errors = []
             };
 
-            foreach(var error in errors)
+            foreach (var error in errors)
             {
-                var fieldLevelError = new FieldLevelError
+                foreach (var subError in error.Value.Errors)
                 {
-                    Code = nameof(ErrorCodes.NotFound),
-                    Field = error.Key,
-                    Message = error.Value.Errors?.First().ErrorMessage
-                };
-
-                validationError.Errors.Add(fieldLevelError);
+                    validationError.Errors.Add(new FieldLevelError
+                    {
+                        Field = error.Key,
+                        Message = subError.ErrorMessage
+                    });
+                }
             }
 
             return new BadRequestObjectResult(validationError);
