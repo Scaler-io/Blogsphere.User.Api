@@ -18,6 +18,10 @@ public class UserDbContext(DbContextOptions<UserDbContext> options) : IdentityDb
 
         builder.Entity<ApplicationRolePermission>()
         .HasKey(ck => new { ck.RoleId, ck.PermissionId });
+
+        builder.Entity<ApplicationUserRole>()
+        .HasDiscriminator<string>("Discriminator")
+        .HasValue<ApplicationUserRole>("ApplicationUserRole");
     }
 
     public DbSet<ApplicationPermission> Permissions { get; set; }

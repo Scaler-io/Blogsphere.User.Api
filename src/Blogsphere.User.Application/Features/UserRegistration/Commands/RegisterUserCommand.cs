@@ -10,7 +10,7 @@ public class RegisterUserCommand(RegistrationRequest registrationRequest, Reques
     : ICommand<Result<UserResponse>>
 {
     [ValidateNested]
-    public RegistrationRequest registrationRequest { get; set; } = registrationRequest;
+    public RegistrationRequest RegistrationRequest { get; set; } = registrationRequest;
     public RequestInformation RequestInformation { get; set; } = requestInformation;
 }
 

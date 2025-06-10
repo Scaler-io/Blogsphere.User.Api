@@ -44,6 +44,7 @@ public class DistributedCacheService(IDistributedCache distributedCache, IOption
 
     public async Task<bool> ContainsAsync(string key, CancellationToken cancellationToken = default)
     {
+        using var activity = _activityTracker.TrackRedisActivity("CONTAINS", key);
         return (await _distributedCache.GetStringAsync(key, cancellationToken)) is not null;
     }
 

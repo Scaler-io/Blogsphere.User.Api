@@ -14,8 +14,8 @@ public class UserRepository(UserManager<ApplicationUser> userManager) : IUserRep
 
     public async Task<bool> AddToClaimsAsync(string userName)
     {
+
         var user = await _userManager.Users
-            .AsNoTracking()
             .Include("UserRoles.Role.RolePermissions.Permission")
             .FirstOrDefaultAsync(x => x.UserName == userName);
 
@@ -35,12 +35,12 @@ public class UserRepository(UserManager<ApplicationUser> userManager) : IUserRep
         ])).Succeeded;
     }
 
-    public async Task AddToRoleAsync(ApplicationUser user, string role)
+    public async Task<bool> AddToRoleAsync(ApplicationUser user, string role)
     {
-        await _userManager.AddToRoleAsync(user, role);
+        return (await _userManager.AddToRoleAsync(user, role)).Succeeded;
     }
 
-    public async Task<bool> AddToRolesAsync(ApplicationUser user, IEnumerable<string> roles)
+    public async Task<bool> AddToRolesAsync(ApplicationUser user, List<string> roles)
     {
         return (await _userManager.AddToRolesAsync(user, roles)).Succeeded;
     }
