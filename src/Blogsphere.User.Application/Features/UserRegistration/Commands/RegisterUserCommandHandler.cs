@@ -81,7 +81,12 @@ public class RegisterUserCommandHandler(ILogger logger,
         _logger.Here().Information("user {@username} created", request.RegistrationRequest.Email);
         _logger.Here().MethodExited();
         
-        return Result<UserResponse>.Success(new() { Email = request.RegistrationRequest.Email });
+        return Result<UserResponse>.Success(new() 
+        { 
+            Id = applicationUser.Id,
+            Email = request.RegistrationRequest.Email,
+            Role = applicationUser.GetUserRoleMappings()
+        });
     }
 
     private async Task<bool> IsEmailTaken(string email)

@@ -113,11 +113,11 @@ public static class ServiceCollectionExtensions
                 .AddHttpClientInstrumentation()
                 .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                 .AddRedisInstrumentation()
+                .AddMassTransitInstrumentation()
                 .AddZipkinExporter(options =>
                 {
                     options.Endpoint = new Uri(configuration["Zipkin:Url"]);
-                })
-                .AddMassTransitInstrumentation();
+                });
             });
 
         services.AddCors(options =>
