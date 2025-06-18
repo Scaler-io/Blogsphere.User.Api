@@ -116,7 +116,8 @@ public static class ServiceCollectionExtensions
                 .AddZipkinExporter(options =>
                 {
                     options.Endpoint = new Uri(configuration["Zipkin:Url"]);
-                });
+                })
+                .AddMassTransitInstrumentation();
             });
 
         services.AddCors(options =>

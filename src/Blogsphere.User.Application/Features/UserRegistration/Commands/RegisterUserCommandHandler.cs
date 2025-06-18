@@ -1,3 +1,4 @@
+using System.Text;
 using AutoMapper;
 using Blogsphere.User.Application.Contracts.ActivityTracker;
 using Blogsphere.User.Application.Contracts.Cache;
@@ -10,6 +11,8 @@ using Blogsphere.User.Domain.Models.Constants;
 using Blogsphere.User.Domain.Models.Core;
 using Blogsphere.User.Domain.Models.Enums;
 using Blogsphere.User.Domain.Models.Responses;
+using Contracts.Events;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Blogsphere.User.Application.Features.UserRegistration.Commands;
 
@@ -17,7 +20,8 @@ public class RegisterUserCommandHandler(ILogger logger,
     IUserRepository userRepository,
     ICacheServiceFactory cacheServiceFactory,
     IActivityTracker activityTracker,
-    IMapper mapper
+    IMapper mapper,
+    IPublishServiceFactory publishServiceFactory
 ) : ICommandHandler<RegisterUserCommand, Result<UserResponse>>
 {
     private readonly IMapper _mapper = mapper;
@@ -25,6 +29,8 @@ public class RegisterUserCommandHandler(ILogger logger,
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IActivityTracker _activityTracker = activityTracker;
     private readonly ICacheService _cacheService = cacheServiceFactory.Create(CacheServiceTypes.Distributed);
+    private readonly IPublishServiceFactory _publishServiceFactory = publishServiceFactory;
+    
 
     public async Task<Result<UserResponse>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -64,6 +70,12 @@ public class RegisterUserCommandHandler(ILogger logger,
             return Result<UserResponse>.Failure(ErrorCodes.OperationFailed);
         }
 
+        var token = await _userRepository.GetEmailConfirmationToken(applicationUser);
+
+        var userInvitePublishService = _publishServiceFactory.CreatePublishService<ApplicationUser, UserInvitationSent>();
+        await userInvitePublishService.PublishAsync(applicationUser, request.RequestInformation.CorrelationId, new{
+            Token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token))
+        });
 
         activity?.SetTag(TrackerConstants.CommandStatus, "Success");
         _logger.Here().Information("user {@username} created", request.RegistrationRequest.Email);
