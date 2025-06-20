@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client;
 
 namespace Blogsphere.User.Infrastructure.DI;
 public static class InfrastructureServiceCollectionExtensions
@@ -41,20 +40,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddHealthChecks()
             .AddCheck<DbHealthCheck>("sqlserver-health")
-            .AddCheck<RedisHealthCheck>("redis-health")
-            .AddRabbitMQ(factory: _ => {
-                var eventBus = configuration.GetSection(EventBusOption.OptionName).Get<EventBusOption>();
-                var connectionFactory = new ConnectionFactory {
-                    HostName = eventBus.Host,
-                    UserName = eventBus.Username,
-                    Password = eventBus.Password,
-                    VirtualHost = eventBus.VirtualHost,
-                    Port = eventBus.Port,
-                    RequestedHeartbeat = TimeSpan.FromSeconds(60),
-                    AutomaticRecoveryEnabled = true,
-                };
-                return connectionFactory.CreateConnectionAsync();
-            }, "rabbitmq-health");
+            .AddCheck<RedisHealthCheck>("redis-health");
 
         // for in-memory cache
         services.AddMemoryCache();
