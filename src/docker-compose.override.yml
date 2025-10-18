@@ -1,7 +1,39 @@
 services:
   blogsphere.user.api:
+    container_name: Blogsphere.User.Api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+      - Logging__IncludeScopes=false
+      - "Logging__LogOutputTemplate=[{Timestamp:dd-MM-yyyy HH:mm:ss, fff}] {Level} {Properties} [CorrelationId:{CorrelationId}] [Machine={MachineName}] {CallerType}:{MemberName} {Message}{NewLine}{Exception}{NewLine}"
+      - Logging__Console__Enabled=true
+      - Logging__Console__LogLevel=Debug
+      - Logging__Elastic__Enabled=true
+      - Logging__Elastic__LogLevel=Debug
+      - AppConfigurations__ApplicationIdentifier=Blogsphere.User.Api
+      - AppConfigurations__ApplicationEnvironment=Docker
+      - AppConfigurations__HealthCheckTimeOutInSeconds=2
+      - AppConfigurations__CacheExpiration=60
+      - AppConfigurations__UserListCacheKey=user-list
+      - ApiDescription=User manager api description
+      - ApiOriginHost=Blogsphere.User.Api:8001
+      - Elasticsearch__Uri=http://elasticsearch:9200
+      - ConnectionStrings__DefaultConnection=Server=IdentityDb;Database=IdentityDb;User Id=sa;Password=P@ssw0rd;Encrypt=True;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - IdentityGroupAccess__Authority=http://Blogsphere.IdentityServer
+      - IdentityGroupAccess__Audience=blogsphere.user.api
+      - Zipkin__Url=http://zipkin:9411/api/v2/spans
+      - EventBus__Host=rabbitmq
+      - EventBus__Username=guest
+      - EventBus__Password=guest
+      - EventBus__VirtualHost=/
+      - EventBus__Port=5672
+      - CloudinarySettings__CloudName=dq7lcuprn
+      - CloudinarySettings__ApiKey=741484825353262
+      - CloudinarySettings__ApiSecret=4PrSiEqHGBuFFAjscR6g_N1NsrI
+      - CloudinarySettings__UploadBasePath=Blogsphere/users
     ports:
-      - "8080"
+      - 8001:8080
+    restart: always
+    networks:
+      - blogsphere_dev_net

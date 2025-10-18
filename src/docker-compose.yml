@@ -4,3 +4,7 @@ services:
     build:
       context: .
       dockerfile: Blogsphere.User.Api/Dockerfile
+
+networks:
+  blogsphere_dev_net:
+    external: true

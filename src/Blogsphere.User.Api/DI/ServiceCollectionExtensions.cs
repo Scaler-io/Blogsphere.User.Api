@@ -2,7 +2,6 @@
 using Asp.Versioning.ApiExplorer;
 using Blogsphere.Swagger;
 using Blogsphere.Swagger.Examples.HealthCheck;
-using Blogsphere.Swagger.Examples.UserRegistration;
 using Blogsphere.User.Api.Middlewares;
 using Blogsphere.User.Api.Services;
 using Blogsphere.User.Domain.Configurations;
@@ -52,8 +51,9 @@ public static class ServiceCollectionExtensions
 
         services.AddHealthChecksUI(options =>
         {
-            options.AddHealthCheckEndpoint("Blogspher Api Health", "/healthcheck");
-        }).AddInMemoryStorage();
+            options.AddHealthCheckEndpoint("Blogspher Api Health", "http://localhost:8080/healthcheck");
+        })
+        .AddInMemoryStorage();
 
         // handles api's default error validation model
         services.Configure<ApiBehaviorOptions>(options =>
