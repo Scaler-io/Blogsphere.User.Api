@@ -5,6 +5,15 @@ public sealed class HealthCheckResponseExample : IExamplesProvider<object>
 {
     public object GetExamples()
     {
-        throw new NotImplementedException();
+        return new {
+            Status = "Healthy",
+            Checks = new List<object>
+            {
+                new {
+                    Name = "Database",
+                    Status = "Healthy"
+                }
+            }
+        };
     }
 }

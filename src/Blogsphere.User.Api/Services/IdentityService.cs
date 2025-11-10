@@ -1,4 +1,5 @@
 using Blogsphere.User.Domain.Models.Dtos;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,8 +24,19 @@ public class IdentityService(IHttpContextAccessor httpContextAccessor) : IIdenti
         var claims = _httpContextAccessor.HttpContext.User.Claims;
         var token = _httpContextAccessor.HttpContext.Request.Headers.Authorization;
 
-        var roleString = claims.FirstOrDefault(c => c.Type == RoleClaim).Value;
-        var permissionString = claims.FirstOrDefault(c => c.Type == PermissionClaim).Value;
+        if (claims.IsNullOrEmpty())
+        {
+            return null;
+        }
+        
+       var permissionsString = claims.Where(c => c.Type == PermissionClaim).FirstOrDefault()?.Value;
+        var id = claims.Where(c => c.Type == IdClaim).FirstOrDefault().Value;
+        var firstName = claims.Where(c => c.Type == FirstNameClaim).FirstOrDefault().Value;
+        var lastName = claims.Where(c => c.Type == LastNameClaim).FirstOrDefault().Value;
+        var name = claims.Where(c => c.Type == UsernameClaim).FirstOrDefault().Value;
+        var email = claims.Where(c => c.Type == EmailClaim).FirstOrDefault().Value;
+        var role = claims.Where(c => c.Type == RoleClaim).FirstOrDefault()?.Value;
+        var permissions = permissionsString == "*" ? ["*"] : JsonConvert.DeserializeObject<List<string>>(permissionsString);
 
         return new()
         {
@@ -35,8 +47,8 @@ public class IdentityService(IHttpContextAccessor httpContextAccessor) : IIdenti
             Email = claims.FirstOrDefault(c => c.Type == EmailClaim).Value,
             Authorization = new()
             {
-                Roles = JsonConvert.DeserializeObject<List<string>>(roleString),
-                Permissions = JsonConvert.DeserializeObject<List<string>>(permissionString),
+                Roles = [role],
+                Permissions = permissions,
                 Token = token
             }
         };

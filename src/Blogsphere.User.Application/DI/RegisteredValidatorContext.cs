@@ -1,4 +1,5 @@
 using Blogsphere.User.Application.Validators;
+using Blogsphere.User.Domain.Models.Requests.ManagementUser;
 using Blogsphere.User.Domain.Models.Requests.Registration;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,8 @@ public static class RegisteredValidatorContext
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         services.AddScoped<IValidator<RegistrationRequest>, RegistrationRequestValidator>();
+        services.AddScoped<IValidator<CreateManagementUserRequest>, CreateManagementUserRequestValidator>();
+        services.AddScoped<IValidator<UpdateManagementUserRoleRequest>, UpdateManagementUserRoleRequestValidator>();
         return services;
     }
 }

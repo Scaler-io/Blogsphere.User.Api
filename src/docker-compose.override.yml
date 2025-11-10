@@ -15,14 +15,19 @@ services:
       - AppConfigurations__HealthCheckTimeOutInSeconds=2
       - AppConfigurations__CacheExpiration=60
       - AppConfigurations__UserListCacheKey=user-list
+      - AppConfigurations__UserInvitationEmailEnabled=true
+      - AppConfigurations__ManagementUserWelcomeEmailEnabled=true
+      - AppConfigurations__ManagementUserPasswordEmailEnabled=true
       - ApiDescription=User manager api description
       - ApiOriginHost=Blogsphere.User.Api:8001
       - Elasticsearch__Uri=http://elasticsearch:9200
       - ConnectionStrings__DefaultConnection=Server=IdentityDb;Database=IdentityDb;User Id=sa;Password=P@ssw0rd;Encrypt=True;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
-      - IdentityGroupAccess__Authority=http://Blogsphere.IdentityServer
+      - IdentityGroupAccess__Authority=http://host.docker.internal:5000
       - IdentityGroupAccess__Audience=blogsphere.user.api
       - Zipkin__Url=http://zipkin:9411/api/v2/spans
+      - Jaeger__Host=jaeger
+      - Jaeger__Port=6831
       - EventBus__Host=rabbitmq
       - EventBus__Username=guest
       - EventBus__Password=guest

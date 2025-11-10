@@ -33,4 +33,15 @@ public sealed class ApiError(string code, string errorMessages)
     public static ApiError InvalidTwitterUrl() => new("InvalidTwitterUrl", "Invalid Twitter URL");
 
     public static ApiError InvalidWebsiteUrl() => new("InvalidWebsiteUrl", "Invalid website URL");
+
+    public static ApiError PhoneNumberRequired() => new("PhoneNumberRequired", "Phone number is required");
+    public static ApiError InvalidPhoneNumber() => new("InvalidPhoneNumber", "Invalid phone number");
+
+    public static ApiError DepartmentRequired() => new("DepartmentRequired", "Department is required");
+    public static ApiError JobTitleRequired() => new("JobTitleRequired", "Job title is required");
+
+    public static ApiError RolesRequired() => new("RolesRequired", "Roles are required");
+    public static ApiError InvalidRole() => new("InvalidRole", "Invalid role");
+
+    public static ApiError ManagementUserIdRequired() => new("ManagementUserIdRequired", "Management user ID is required");
 }

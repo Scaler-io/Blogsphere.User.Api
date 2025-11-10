@@ -7,7 +7,7 @@ using Blogsphere.User.Domain.Models.Responses;
 namespace Blogsphere.User.Application.Features.UserRegistration.Commands;
 
 public class RegisterUserCommand(RegistrationRequest registrationRequest, RequestInformation requestInformation) 
-    : ICommand<Result<UserResponse>>
+    : ICommand<Result<UserRegistrationResponse>>
 {
     [ValidateNested]
     public RegistrationRequest RegistrationRequest { get; set; } = registrationRequest;

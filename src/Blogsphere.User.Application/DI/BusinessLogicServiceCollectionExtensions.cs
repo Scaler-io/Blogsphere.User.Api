@@ -3,6 +3,7 @@ using Blogsphere.User.Application.Contracts.ActivityTracker;
 using Blogsphere.User.Application.Contracts.Security;
 using Blogsphere.User.Application.Security;
 using Blogsphere.User.Domain.Entities;
+using Blogsphere.User.Domain.Entities.Management;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -20,12 +21,7 @@ public static class BusinessLogicServiceCollectionExtensions
         services.AddMediatR(Assembly.GetExecutingAssembly());
         services.AddValidators();
 
-        services.AddSingleton<IPermissionMapper, PermissionMapper>(sp =>
-        {
-            using var scope = sp.CreateScope();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-            return new PermissionMapper(roleManager);
-        });
+        services.AddSingleton<IPermissionMapper, PermissionMapper>();
 
         // auto mapper
         services.AddAutoMapper(Assembly.GetExecutingAssembly());

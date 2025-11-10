@@ -8,7 +8,7 @@ public class ApiResponse
     public ApiResponse(ErrorCodes code, string errorMessage = null)
     {
         Code = code;
-        ErrorMessage = errorMessage ?? GetDefaultErrorMessage(code);
+        ErrorMessage = !string.IsNullOrEmpty(errorMessage) ? errorMessage : GetDefaultErrorMessage(code);
     }
 
     public ErrorCodes Code { get; set; }

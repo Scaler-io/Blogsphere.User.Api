@@ -3,6 +3,7 @@ using Blogsphere.User.Domain.Models.Constants;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -82,5 +83,16 @@ public sealed class SwaggerConfiguration
                     $"/swagger/{description.GroupName}/swagger.json",
                     $"User API - {description.GroupName.ToUpperInvariant()}");
         }
+    }
+
+    public static void SetupScalarOptions(ScalarOptions options, ApiVersionDescription description)
+    {
+        options.WithOpenApiRoutePattern($"/swagger/{description.GroupName}/swagger.json")
+        .WithTitle($"User API - {description.GroupName.ToUpperInvariant()}")
+        .WithDarkModeToggle()
+        .WithTheme(ScalarTheme.Saturn)
+        .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.Http)
+        .WithDefaultFonts()
+        .WithLayout(ScalarLayout.Modern);
     }
 }

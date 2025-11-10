@@ -74,4 +74,11 @@ public class UserRepository(UserManager<ApplicationUser> userManager) : IUserRep
     {
         return (await _userManager.UpdateAsync(user)).Succeeded;
     }
+
+    public IQueryable<ApplicationUser> AsQueryable()
+    {
+        return _userManager.Users.AsNoTracking()
+        .Include("UserRoles.Role.RolePermissions.Permission");
+    }
+    
 }

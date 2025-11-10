@@ -6,6 +6,7 @@ using Blogsphere.User.Application.Contracts.CQRS;
 using Blogsphere.User.Application.Contracts.Data.Repositories;
 using Blogsphere.User.Application.Contracts.Factory;
 using Blogsphere.User.Application.Extensions;
+using Blogsphere.User.Domain.Configurations;
 using Blogsphere.User.Domain.Entities;
 using Blogsphere.User.Domain.Models.Constants;
 using Blogsphere.User.Domain.Models.Core;
@@ -13,6 +14,7 @@ using Blogsphere.User.Domain.Models.Enums;
 using Blogsphere.User.Domain.Models.Responses;
 using Contracts.Events;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 
 namespace Blogsphere.User.Application.Features.UserRegistration.Commands;
 
@@ -21,18 +23,20 @@ public class RegisterUserCommandHandler(ILogger logger,
     ICacheServiceFactory cacheServiceFactory,
     IActivityTracker activityTracker,
     IMapper mapper,
-    IPublishServiceFactory publishServiceFactory
-) : ICommandHandler<RegisterUserCommand, Result<UserResponse>>
+    IPublishServiceFactory publishServiceFactory,
+    IOptions<AppConfigOption> appConfigOptions
+) : ICommandHandler<RegisterUserCommand, Result<UserRegistrationResponse>>
 {
     private readonly IMapper _mapper = mapper;
     private readonly ILogger _logger = logger;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IActivityTracker _activityTracker = activityTracker;
+    private readonly AppConfigOption _appConfigOption = appConfigOptions.Value;
     private readonly ICacheService _cacheService = cacheServiceFactory.Create(CacheServiceTypes.Distributed);
     private readonly IPublishServiceFactory _publishServiceFactory = publishServiceFactory;
     
 
-    public async Task<Result<UserResponse>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserRegistrationResponse>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         _logger.Here().MethodEntered();
         _logger.Here().Information("Command executing {name}", nameof(RegisterUserCommand));
@@ -43,7 +47,7 @@ public class RegisterUserCommandHandler(ILogger logger,
         {
             _logger.Here().Error("Email {email} is already taken", request.RegistrationRequest.Email);
             activity?.SetTag(TrackerConstants.CommandStatus, "Failed");
-            return Result<UserResponse>.Failure(ErrorCodes.BadRequest, "Email is already taken");
+            return Result<UserRegistrationResponse>.Failure(ErrorCodes.BadRequest, "Email is already taken");
         }
 
         var applicationUser = _mapper.Map<ApplicationUser>(request.RegistrationRequest);
@@ -53,35 +57,33 @@ public class RegisterUserCommandHandler(ILogger logger,
         {
             _logger.Here().Error("Failed to create new user {@username}", request.RegistrationRequest.Email);
             activity?.SetTag(TrackerConstants.CommandStatus, "Failed");
-            return Result<UserResponse>.Failure(ErrorCodes.OperationFailed);
+            return Result<UserRegistrationResponse>.Failure(ErrorCodes.OperationFailed);
         }
 
         if (!await _userRepository.AddToRolesAsync(applicationUser, [request.RegistrationRequest.Role.ToString()]))
         {
             _logger.Here().Error("Failed to assign roles to {@username}", request.RegistrationRequest.Email);
             activity?.SetTag(TrackerConstants.CommandStatus, "Failed");
-            return Result<UserResponse>.Failure(ErrorCodes.OperationFailed);
+            return Result<UserRegistrationResponse>.Failure(ErrorCodes.OperationFailed);
         }
 
         if (!await _userRepository.AddToClaimsAsync(request.RegistrationRequest.Email))
         {
             _logger.Here().Error("Failed to assign claims to {@username}", request.RegistrationRequest.Email);
             activity?.SetTag(TrackerConstants.CommandStatus, "Failed");
-            return Result<UserResponse>.Failure(ErrorCodes.OperationFailed);
+            return Result<UserRegistrationResponse>.Failure(ErrorCodes.OperationFailed);
         }
 
-        var token = await _userRepository.GetEmailConfirmationToken(applicationUser);
-
-        var userInvitePublishService = _publishServiceFactory.CreatePublishService<ApplicationUser, UserInvitationSent>();
-        await userInvitePublishService.PublishAsync(applicationUser, request.RequestInformation.CorrelationId, new{
-            Token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token))
-        });
+        if (_appConfigOption.UserInvitationEmailEnabled)
+        {
+            await PublishUserInvitationEmail(applicationUser, request.RequestInformation);
+        }
 
         activity?.SetTag(TrackerConstants.CommandStatus, "Success");
         _logger.Here().Information("user {@username} created", request.RegistrationRequest.Email);
         _logger.Here().MethodExited();
         
-        return Result<UserResponse>.Success(new() 
+        return Result<UserRegistrationResponse>.Success(new() 
         { 
             Id = applicationUser.Id,
             Email = request.RegistrationRequest.Email,
@@ -105,5 +107,15 @@ public class RegisterUserCommandHandler(ILogger logger,
         await _cacheService.SetAsync(cacheKey, false);
 
         return exists;
+    }
+
+    private async Task PublishUserInvitationEmail(ApplicationUser applicationUser, RequestInformation requestInformation)
+    {
+        var token = await _userRepository.GetEmailConfirmationToken(applicationUser);
+
+        var userInvitePublishService = _publishServiceFactory.CreatePublishService<ApplicationUser, UserInvitationSent>();
+        await userInvitePublishService.PublishAsync(applicationUser, requestInformation.CorrelationId, new{
+            Token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token))
+        });
     }
 }
