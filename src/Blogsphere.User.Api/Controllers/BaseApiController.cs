@@ -15,12 +15,12 @@ public class BaseApiController(ILogger logger, IIdentityService identityService)
     protected ILogger Logger { get; set; } = logger;
     protected readonly IIdentityService _identityService = identityService;
 
-    protected UserDto CurrentUser => new(); // will change later
+    protected UserDto CurrentUser => User.Identity.IsAuthenticated ? _identityService.PrepareUser() : new();
 
     protected RequestInformation RequestInformation => new() 
     {
         CorrelationId = GetOrGenerateCorrelationId(),
-        CurrentUser = User.Identity.IsAuthenticated ? CurrentUser : new()       
+        CurrentUser =  CurrentUser  
     };
 
     private string GetOrGenerateCorrelationId() => Request?.GetRequestHeaderOrDefault("CorrelationId", $"GEN-{Guid.NewGuid()}");

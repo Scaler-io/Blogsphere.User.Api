@@ -26,8 +26,8 @@ public class RegistrationController(ILogger logger, IMediator mediator, IIdentit
     [SwaggerOperation(OperationId = "RegisterUser", Description = "Fetches all user list")]
     [SwaggerRequestExample(typeof(RegistrationRequest), typeof(UserRegistrationRequestExample))]
     // 200
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
-    [SwaggerResponseExample(StatusCodes.Status201Created, typeof(UserResponseExample))]
+    [ProducesResponseType(typeof(UserRegistrationResponse), StatusCodes.Status201Created)]
+    [SwaggerResponseExample(StatusCodes.Status201Created, typeof(UserRegistrationResponseExample))]
     // 404
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(NotFoundResponseExample))]

@@ -15,7 +15,7 @@ public class PublishService<T, TEvent>(IPublishEndpoint publishEndpoint, IMapper
     private readonly IMapper _mapper = mapper;
     private readonly ILogger _logger = logger;
 
-    public async Task PublishAsync(T message, string correlationId, object additionalProperties = default)
+    public async Task PublishAsync(T message, string correlationId, object additionalProperties)
     {
         _logger.Here().MethodEntered();
         var newEvent = _mapper.Map<TEvent>(message);

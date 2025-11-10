@@ -9,4 +9,7 @@ public class AppConfigOption
     public int CacheExpiration { get; set; }
     public string CategoryCacheKey {  get; set; }
     public string ProductCacheKey { get; set; }    
+    public bool UserInvitationEmailEnabled { get; set; }
+    public bool ManagementUserWelcomeEmailEnabled { get; set; }
+    public bool ManagementUserPasswordEmailEnabled { get; set; }
 }

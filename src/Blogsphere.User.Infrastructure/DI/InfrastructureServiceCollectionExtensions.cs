@@ -3,13 +3,17 @@ using Blogsphere.User.Application.Contracts.EventBus;
 using Blogsphere.User.Application.Contracts.Factory;
 using Blogsphere.User.Domain.Configurations;
 using Blogsphere.User.Domain.Entities;
+using Blogsphere.User.Domain.Entities.Management;
+using Blogsphere.User.Domain.Models.Constants;
 using Blogsphere.User.Infrastructure.Cache;
 using Blogsphere.User.Infrastructure.Database;
 using Blogsphere.User.Infrastructure.Database.Repositories;
+using Blogsphere.User.Infrastructure.Database.Repositories.Management;
 using Blogsphere.User.Infrastructure.EventBus;
 using Blogsphere.User.Infrastructure.Factory;
 using Blogsphere.User.Infrastructure.HealthChecks;
 using Blogsphere.User.Infrastructure.Security;
+using Blogsphere.User.Infrastructure.Security.ManagementUser;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +29,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddDbContext<UserDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+        });
+
+        services.AddDbContext<ManagementUserDbContext>(options =>
+        {
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), 
+                sqlOptions => sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "Management"));
         });
 
         services.AddDbContext<DataProtectionKeyContext>(options =>
@@ -56,16 +66,41 @@ public static class InfrastructureServiceCollectionExtensions
         //     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(appRootPath, "keys")))
         //     .SetApplicationName("blogsphere");
 
-        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+        services.AddIdentityCore<ApplicationUser>(options =>
         {
-            options.SignIn.RequireConfirmedEmail = true;
+            // Password requirements
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireLowercase = true;
+            options.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
         })
+        .AddRoles<ApplicationRole>()
         .AddEntityFrameworkStores<UserDbContext>()
         .AddDefaultTokenProviders()
         .AddTokenProvider<ConfirmationEmailTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider");
 
+        services.AddIdentityCore<ManagementUser>(options =>
+        {
+            // Password requirements
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireLowercase = true;
+    
+            options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+        })
+        .AddRoles<ManagementRole>()
+        .AddEntityFrameworkStores<ManagementUserDbContext>()
+        .AddDefaultTokenProviders()
+        .AddTokenProvider<ManagementEmailConfirmationTokenProvider<ManagementUser>>(ManagementConstants.ManagementEmailTokenProvider)
+        .AddClaimsPrincipalFactory<UserClaimsPrincipalFactory<ManagementUser>>();
+
         services.AddTransient<Application.Contracts.Data.IDbTransaction, DbTransaction>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IManagementUserRepository, ManagementUserRepository>();
 
         // Caching
         services.AddScoped<ICacheServiceFactory, CacheServiceFactory>();
@@ -80,13 +115,13 @@ public static class InfrastructureServiceCollectionExtensions
             config.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("users", false));
             config.UsingRabbitMq((context, cfg) => 
             {
-                var eventBus = configuration.GetSection(EventBusOption.OptionName).Get<EventBusOption>();
-                cfg.Host(eventBus.Host, eventBus.VirtualHost, host => 
+                var eventBus = configuration.GetSection(EventBusOption.OptionName).Get<EventBusOption>() ?? throw new InvalidOperationException("Event bus configuration is not set");
+                cfg.Host(eventBus.Host, eventBus.VirtualHost ?? "/", host => 
                 {
                     host.Username(eventBus.Username);
                     host.Password(eventBus.Password);
                 });
-
+                cfg.UseMessageRetry(retry => retry.Interval(3, 1000));
                 cfg.ConfigureEndpoints(context);
             });
         });

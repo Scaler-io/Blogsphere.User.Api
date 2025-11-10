@@ -8,8 +8,16 @@ public enum ApiAccess
     UserCreate,
     [EnumMember(Value = "user:update")]
     UserUpdate,
-    [EnumMember(Value = "user:delete")]
-    UserDelete,
-    [EnumMember(Value = "user:read")]
-    UserRead,
+    [EnumMember(Value = "user:manage-roles")]
+    UserManageRoles,
+    [EnumMember(Value = "user:view")]
+    UserView,
+    [EnumMember(Value = "role:view")]
+    RoleView,
+    [EnumMember(Value = "role:create")]
+    RoleCreate,
+    [EnumMember(Value = "role:update")]
+    RoleUpdate,
+    [EnumMember(Value = "role:assign-permissions")]
+    RoleAssignPermissions,
 }

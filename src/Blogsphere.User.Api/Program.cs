@@ -27,6 +27,9 @@ var app = builder.Build();
 
 app.AddApplicationPipeline(swaggerConfiguration);
 
+#if DEBUG
+builder.WebHost.UseUrls("http://localhost:5001");
+#endif
 
 try
 {

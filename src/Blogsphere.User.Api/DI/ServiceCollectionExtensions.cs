@@ -5,9 +5,9 @@ using Blogsphere.Swagger.Examples.HealthCheck;
 using Blogsphere.User.Api.Middlewares;
 using Blogsphere.User.Api.Services;
 using Blogsphere.User.Domain.Configurations;
+using Blogsphere.User.Domain.Models.Constants;
 using Blogsphere.User.Domain.Models.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHealthChecksUI(options =>
         {
-            options.AddHealthCheckEndpoint("Blogspher Api Health", "http://localhost:8080/healthcheck");
+            options.AddHealthCheckEndpoint("Blogspher Api Health", "http://localhost:8001/healthcheck");
         })
         .AddInMemoryStorage();
 
@@ -86,19 +86,20 @@ public static class ServiceCollectionExtensions
                 options.Authority = identityGroupAccess.Authority;
                 options.TokenValidationParameters = new()
                 {
+                    ValidIssuer = identityGroupAccess.Authority,
+                    ValidAudience = identityGroupAccess.Audience,
+                    ValidateIssuerSigningKey = true,
                     ValidateAudience = true,
                     ValidateIssuer = false,
                     ClockSkew = TimeSpan.Zero
                 };
             });
 
-        services.AddAuthorization(options =>
+        services.AddAuthorizationBuilder()
+        .AddPolicy("RequiredScope", policy =>
         {
-            options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
-                .RequireClaim("scope", "userapi:read")
-                .RequireClaim("scope", "userapi:write")
-                .RequireAuthenticatedUser()
-                .Build();
+            policy.RequireClaim("scope", ApiScopes.UserApiWrite);
+            policy.RequireClaim("scope", ApiScopes.UserApiRead);   
         });
 
         services.AddHttpContextAccessor();
@@ -114,6 +115,11 @@ public static class ServiceCollectionExtensions
                 .AddSqlClientInstrumentation(options => options.SetDbStatementForText = true)
                 .AddRedisInstrumentation()
                 .AddMassTransitInstrumentation()
+                .AddJaegerExporter(options => 
+                {
+                    options.AgentHost = configuration["Jaeger:Host"];
+                    options.AgentPort = int.Parse(configuration["Jaeger:Port"]);
+                })
                 .AddZipkinExporter(options =>
                 {
                     options.Endpoint = new Uri(configuration["Zipkin:Url"]);
@@ -122,7 +128,7 @@ public static class ServiceCollectionExtensions
 
         services.AddCors(options =>
         {
-            options.AddPolicy("ecoedencors", policy =>
+            options.AddPolicy("blogspherecors", policy =>
             {
                 policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
             });

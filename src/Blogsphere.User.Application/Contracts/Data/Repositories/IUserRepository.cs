@@ -13,5 +13,6 @@ public interface IUserRepository
     Task<bool> UpdateUser(ApplicationUser user);
     Task<bool> AddToClaimsAsync(string userName);
     Task<string> GetEmailConfirmationToken(ApplicationUser user);
+    IQueryable<ApplicationUser> AsQueryable();
 }
 

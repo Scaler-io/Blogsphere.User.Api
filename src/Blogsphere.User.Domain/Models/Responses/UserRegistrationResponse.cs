@@ -1,6 +1,6 @@
 namespace Blogsphere.User.Domain.Models.Responses;
 
-public class UserResponse
+public class UserRegistrationResponse
 {
     public string Id { get; set; }
     public string Email { get; set; }

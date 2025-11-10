@@ -2,6 +2,7 @@
 using Blogsphere.Swagger;
 using Blogsphere.User.Api.Middlewares;
 using HealthChecks.UI.Client;
+using Scalar.AspNetCore;
 
 namespace Blogsphere.User.Api.DI;
 
@@ -14,13 +15,14 @@ public static class WebApplicationExtensions
         {
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
             SwaggerConfiguration.SetupSwaggerUiOptions(options, provider);
+            foreach(var description in provider.ApiVersionDescriptions)
+            {
+                app.MapScalarApiReference($"scalar/{description.GroupName}", options => 
+                {
+                    SwaggerConfiguration.SetupScalarOptions(options, description);
+                });
+            }
         });
-
-        app.UseHttpsRedirection();
-
-        app.UseMiddleware<CorrelationHeaderEnricher>()
-            .UseMiddleware<RequestLoggerMiddleware>()
-            .UseMiddleware<GlobalExceptionMiddleware>();
 
         app.MapHealthChecks("/healthcheck", new()
         {
@@ -29,14 +31,17 @@ public static class WebApplicationExtensions
 
         app.MapHealthChecksUI(options => options.UIPath = "/dashboard");
 
+        
+        app.UseMiddleware<CorrelationHeaderEnricher>()
+            .UseMiddleware<RequestLoggerMiddleware>()
+            .UseMiddleware<GlobalExceptionMiddleware>();
+        
+        app.UseCors("blogspherecors");
 
         app.UseAuthentication();
-
         app.UseAuthorization();
 
         app.MapControllers();
-
-        app.UseCors("ecoedencors");
 
         return app;
     }
